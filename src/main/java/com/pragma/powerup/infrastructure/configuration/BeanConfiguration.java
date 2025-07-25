@@ -6,9 +6,12 @@ import com.pragma.powerup.domain.usecase.*;
 import com.pragma.powerup.infrastructure.out.jpa.adapter.*;
 import com.pragma.powerup.infrastructure.out.jpa.mapper.*;
 import com.pragma.powerup.infrastructure.out.jpa.repository.*;
+import com.pragma.powerup.infrastructure.out.sms.TwilioNotificacionSmsAdapter;
 import com.pragma.powerup.infrastructure.security.EncriptarContrasenaAdapter;
 import com.pragma.powerup.infrastructure.security.adapter.UsuarioSesionAdapter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
+
 public class BeanConfiguration {
 
     private final IUsuarioRepository usuarioRepository;
@@ -129,7 +133,7 @@ public class BeanConfiguration {
 
     @Bean
     public IPedidoServicePort pedidoServicePort(){
-        return new PedidoUseCase(pedidoPersistencePort(),platoPersistencePort(),usuarioSesionServicePort(),usuarioRestaurantePersistencPort());
+        return new PedidoUseCase(pedidoPersistencePort(),platoPersistencePort(),usuarioSesionServicePort(),usuarioRestaurantePersistencPort(),usuarioPersistencePort(),notificacionSmsPort());
     }
 
 
@@ -142,6 +146,18 @@ public class BeanConfiguration {
     @Bean
     public IUsuarioRestaurantePersistencePort usuarioRestaurantePersistencPort(){
         return new UsuarioRestauranteJpaAdapter(usuarioRestauranteRepository,usuarioRestauranteEntityMapper);
+    }
+
+    @Bean
+    public INotificacionSmsPort notificacionSmsPort() {
+        return new TwilioNotificacionSmsAdapter(restTemplateBuilder().build());
+    }
+
+
+
+    @Bean
+    public RestTemplateBuilder restTemplateBuilder() {
+        return new RestTemplateBuilder();
     }
 
 

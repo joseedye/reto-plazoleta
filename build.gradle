@@ -38,7 +38,7 @@ dependencies {
 
 
 	runtimeOnly "mysql:mysql-connector-java:${mySqlConnectorVersion}"
-
+	implementation "com.twilio.sdk:twilio:8.31.1"
 	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
 	compileOnly "org.projectlombok:lombok:${lombokVersion}"
 	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"

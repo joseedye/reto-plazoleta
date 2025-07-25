@@ -1,6 +1,8 @@
 package com.pragma.powerup.infrastructure.out.jpa.adapter;
 
+import com.pragma.powerup.domain.model.GenericoPaginadoOut;
 import com.pragma.powerup.domain.model.Pedido;
+import com.pragma.powerup.domain.model.PedidoPaginado;
 import com.pragma.powerup.domain.spi.IPedidoPersistencePort;
 import com.pragma.powerup.infrastructure.exception.NoDataFoundException;
 import com.pragma.powerup.infrastructure.out.jpa.entity.DetallePedidoEntity;
@@ -13,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.pragma.powerup.infrastructure.util.ExcepcionMessageConstants.*;
 
 public class PedidoJpaAdapter implements IPedidoPersistencePort {
 
@@ -41,21 +45,52 @@ public class PedidoJpaAdapter implements IPedidoPersistencePort {
     }
 
     @Override
-    public List<Pedido> listarPedidos(String estado, int pagina, int tamanio, Long restauranteId) {
-        Pageable pageable = PageRequest.of(pagina,tamanio);
-        Page<PedidoEntity> pedidoEntities = pedidoRepository.findByEstadoAndRestaurante_Id(estado, restauranteId, pageable);
+    public GenericoPaginadoOut<Pedido> listarPedidos(PedidoPaginado pedidoPaginado, Long restauranteId) {
 
-        if (pagina >= pedidoEntities.getTotalPages()) {
-            throw new NoDataFoundException("La página solicitada no existe");
+        Pageable pageable = PageRequest.of(pedidoPaginado.getPagina(),pedidoPaginado.getTamanio());
+        Page<PedidoEntity> pedidoEntities = pedidoRepository.findByEstadoAndRestaurante_Id(pedidoPaginado.getEstado(), restauranteId, pageable);
+
+        if (pedidoPaginado.getPagina() >= pedidoEntities.getTotalPages()) {
+            throw new NoDataFoundException(PAGINA_NO_EXISTE);
         }
 
-        System.out.println("cantidad: "+pedidoEntities.get().count());
         if(pedidoEntities.isEmpty()){
-            throw new NoDataFoundException("No hay pedidos para mostrar1");
+            throw new NoDataFoundException(NO_HAY_PEDIDOS);
         }
 
-        return pedidoEntities.getContent().stream()
-                .map(pedidoEntityMapper::toPedido).collect(Collectors.toList());
 
+        List<Pedido> pedidos  = pedidoEntities.getContent()
+                .stream()
+                .map(pedidoEntityMapper::toPedido)
+                .collect(Collectors.toList());
+
+        GenericoPaginadoOut <Pedido> pedidoPaginadoOut = new GenericoPaginadoOut <Pedido>();
+        pedidoPaginadoOut.setLista(pedidos);
+        pedidoPaginadoOut.setPaginaActual(pedidoEntities.getNumber());
+        pedidoPaginadoOut.setTotalPaginas(pedidoEntities.getTotalPages());
+        pedidoPaginadoOut.setTotalElementos(pedidoEntities.getTotalElements());
+        pedidoPaginadoOut.setTamanioPagina(pedidoEntities.getSize());
+
+        return pedidoPaginadoOut;
+
+    }
+
+    @Override
+    public Pedido getPedido(Long idPedido) {
+        PedidoEntity pedidoEntity = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new NoDataFoundException(NO_DATA));
+        return pedidoEntityMapper.toPedido(pedidoEntity);
+    }
+
+    @Override
+    public Pedido actualizarPedido(Pedido pedido) {
+        System.out.println("antes del mapper"+pedido.getPinSeguridad());
+        PedidoEntity pedidoEntity = pedidoEntityMapper.toEntity(pedido);
+        System.out.println("luego del mapper"+pedidoEntity.getPinSeguridad());
+        for (DetallePedidoEntity detalle : pedidoEntity.getDetalles()) {
+            detalle.setPedido(pedidoEntity);
+        }
+        PedidoEntity pedidoGuardado = pedidoRepository.save(pedidoEntity);
+        return pedidoEntityMapper.toPedido(pedidoGuardado);
     }
 }

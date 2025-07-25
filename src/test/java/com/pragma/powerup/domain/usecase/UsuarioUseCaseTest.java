@@ -14,6 +14,7 @@ import com.pragma.powerup.domain.spi.IRestaurantePersistencePort;
 import com.pragma.powerup.domain.spi.IRolPersistencePort;
 import com.pragma.powerup.domain.spi.IUsuarioPersistencePort;
 import com.pragma.powerup.domain.spi.IUsuarioRestaurantePersistencePort;
+import com.pragma.powerup.domain.util.RolEnum;
 import com.pragma.powerup.infrastructure.exception.RolNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 
 import static com.pragma.powerup.domain.util.ExceptionMessageConstants.USUARIO_NO_MAYOR_EDAD;
-import static com.pragma.powerup.domain.util.RolConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -67,7 +67,7 @@ class UsuarioUseCaseTest {
         usuario.setNombres("Nombre Propietario");
         usuario.setFechaNacimiento(LocalDate.of(2000,1,1));
 
-        Long idRolPropietario = ROL_PROPIETARIO;
+        Long idRolPropietario = RolEnum.PROPIETARIO.getId();
         Rol rol = new Rol(idRolPropietario,"PROPIETARIO");
 
         Usuario usuarioCreado = new Usuario();
@@ -121,7 +121,7 @@ class UsuarioUseCaseTest {
         usuario.setNombres("Nombre Joven");
         usuario.setFechaNacimiento(LocalDate.now().minusYears(10));
 
-        Long idRolPropietario = ROL_PROPIETARIO;
+        Long idRolPropietario = RolEnum.PROPIETARIO.getId();
 
 
         Long idUsuarioAdministrador = 100L;
@@ -151,7 +151,7 @@ class UsuarioUseCaseTest {
         usuario.setNombres("Nombre Propietario");
         usuario.setFechaNacimiento(LocalDate.of(2000,1,1));
 
-        Long idRolPropietario = ROL_PROPIETARIO;
+        Long idRolPropietario = RolEnum.PROPIETARIO.getId();
         Rol rol = new Rol(idRolPropietario,"PROPIETARIO");
 
         Usuario usuarioCreado = new Usuario();
@@ -161,7 +161,7 @@ class UsuarioUseCaseTest {
         Long idUsuarioAdministrador = 100L;
         Usuario usuarioAutenticado = new Usuario();
         usuarioAutenticado.setId(idUsuarioAdministrador);
-        usuarioAutenticado.setRol(new Rol(ROL_ADMIN,"ADMINISTRADOR"));
+        usuarioAutenticado.setRol(new Rol(RolEnum.ADMIN.getId(),"ADMINISTRADOR"));
 
         when(usuarioSesionServicePort.obtenerIdUsuarioAutenticado()).thenReturn(idUsuarioAdministrador);
         when(rolPersistencePort.getRol(idRolPropietario)).thenReturn(rol);
@@ -190,12 +190,12 @@ class UsuarioUseCaseTest {
         usuario.setNombres("Nombre Propietario");
         usuario.setFechaNacimiento(LocalDate.of(2000,1,1));
 
-        Long idRolPropietario = ROL_PROPIETARIO;
+        Long idRolPropietario = RolEnum.PROPIETARIO.getId();
 
         Long idUsuarioSesion = 100L;
         Usuario usuarioAutenticado = new Usuario();
         usuarioAutenticado.setId(idUsuarioSesion);
-        usuarioAutenticado.setRol(new Rol(ROL_PROPIETARIO,"PROPIETARIO"));
+        usuarioAutenticado.setRol(new Rol(RolEnum.PROPIETARIO.getId(),"PROPIETARIO"));
 
         when(usuarioSesionServicePort.obtenerIdUsuarioAutenticado()).thenReturn(idUsuarioSesion);
         when(usuarioPersistencePort.getUsuario(idUsuarioSesion)).thenReturn(usuarioAutenticado);
@@ -220,13 +220,13 @@ class UsuarioUseCaseTest {
         Long idUsuarioSesion = 100L;
         Usuario usuarioAutenticado = new Usuario();
         usuarioAutenticado.setId(idUsuarioSesion);
-        usuarioAutenticado.setRol(new Rol(ROL_EMPLEADO,"EMPLEADO"));
+        usuarioAutenticado.setRol(new Rol(RolEnum.EMPLEADO.getId(),"EMPLEADO"));
 
         when(usuarioSesionServicePort.obtenerIdUsuarioAutenticado()).thenReturn(idUsuarioSesion);
         when(usuarioPersistencePort.getUsuario(idUsuarioSesion)).thenReturn(usuarioAutenticado);
 
         Exception exception = assertThrows(UsuarioSinPermisoException.class, () -> {
-            usuarioUseCase.saveUsuario(usuario, ROL_EMPLEADO);
+            usuarioUseCase.saveUsuario(usuario, RolEnum.EMPLEADO.getId());
         });
 
     }
@@ -245,19 +245,19 @@ class UsuarioUseCaseTest {
         Long idUsuarioSesion = 100L;
         Usuario usuarioAutenticado = new Usuario();
         usuarioAutenticado.setId(idUsuarioSesion);
-        usuarioAutenticado.setRol(new Rol(ROL_PROPIETARIO,"PROPIETARIO"));
+        usuarioAutenticado.setRol(new Rol(RolEnum.PROPIETARIO.getId(),"PROPIETARIO"));
 
         when(usuarioSesionServicePort.obtenerIdUsuarioAutenticado()).thenReturn(idUsuarioSesion);
         when(usuarioPersistencePort.getUsuario(idUsuarioSesion)).thenReturn(usuarioAutenticado);
-        when(rolPersistencePort.getRol(ROL_EMPLEADO)).thenReturn(new Rol(ROL_EMPLEADO,"EMPLEADO"));
+        when(rolPersistencePort.getRol(RolEnum.EMPLEADO.getId())).thenReturn(new Rol(RolEnum.EMPLEADO.getId(),"EMPLEADO"));
         when(restaurantePersistencePort.getByPropietario(idUsuarioSesion)).thenReturn(new Restaurante());
         when(usuarioPersistencePort.saveUsuario(usuario)).thenReturn(usuario);
 
-        Usuario empeladoCreado = usuarioUseCase.saveUsuario(usuario, ROL_EMPLEADO);
+        Usuario empeladoCreado = usuarioUseCase.saveUsuario(usuario, RolEnum.EMPLEADO.getId());
 
 
         assertNotNull(empeladoCreado);
-        assertEquals(empeladoCreado.getRol().getId(), ROL_EMPLEADO);
+        assertEquals(empeladoCreado.getRol().getId(), RolEnum.EMPLEADO.getId());
 
     }
 
@@ -272,20 +272,20 @@ class UsuarioUseCaseTest {
         usuario.setNombres("Nombre Propietario");
         usuario.setFechaNacimiento(LocalDate.of(2000,1,1));
 
-        Rol rolCliente = new Rol(ROL_CLIENTE,"CLIENTE");
+        Rol rolCliente = new Rol(RolEnum.CLIENTE.getId(),"CLIENTE");
 
         Usuario usuarioCreado = new Usuario();
         usuarioCreado.setId(20L);
         usuarioCreado.setRol(rolCliente);
 
-        when(rolPersistencePort.getRol(ROL_CLIENTE)).thenReturn(rolCliente);
+        when(rolPersistencePort.getRol(RolEnum.CLIENTE.getId())).thenReturn(rolCliente);
         when(usuarioPersistencePort.saveUsuario(any(Usuario.class))).thenReturn(usuarioCreado);
 
-        Usuario rtaUseCase = usuarioUseCase.saveUsuario(usuario, ROL_CLIENTE);
+        Usuario rtaUseCase = usuarioUseCase.saveUsuario(usuario, RolEnum.CLIENTE.getId());
 
         // Assert
         assertNotNull(rtaUseCase);
-        assertEquals(rtaUseCase.getRol().getId(), ROL_CLIENTE);
+        assertEquals(rtaUseCase.getRol().getId(), RolEnum.CLIENTE.getId());
 
     }
 

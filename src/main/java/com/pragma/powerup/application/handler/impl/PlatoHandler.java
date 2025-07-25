@@ -1,7 +1,9 @@
 package com.pragma.powerup.application.handler.impl;
 
 import com.pragma.powerup.application.dto.request.PlatoActualizaRequestDto;
+import com.pragma.powerup.application.dto.request.PlatoPaginadoRequestDto;
 import com.pragma.powerup.application.dto.request.PlatoRequestDto;
+import com.pragma.powerup.application.dto.response.GenericoPaginadoResponseDto;
 import com.pragma.powerup.application.dto.response.PlatoResponseDto;
 import com.pragma.powerup.application.exception.NoDataFoundException;
 import com.pragma.powerup.application.handler.IPlatoHandler;
@@ -13,6 +15,7 @@ import com.pragma.powerup.domain.api.IRestauranteServicePort;
 import com.pragma.powerup.domain.api.IUsuarioServicePort;
 import com.pragma.powerup.domain.model.Categoria;
 import com.pragma.powerup.domain.model.Plato;
+import com.pragma.powerup.domain.model.PlatoPaginado;
 import com.pragma.powerup.domain.model.Restaurante;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,14 +65,20 @@ public class PlatoHandler implements IPlatoHandler {
     }
 
     @Override
-    public List<PlatoResponseDto> listarPlatos(int pagina, int tamanio, Long categoria) {
-        return platoResponseMapper.toResponseList(platoServicePort.listarPlatos(pagina,tamanio,categoria));
+    public GenericoPaginadoResponseDto<PlatoResponseDto> listarPlatos(PlatoPaginadoRequestDto platoPaginadoRequestDto) {
+        PlatoPaginado platoPaginado = platoRequestMapper.toPlatoPaginado(platoPaginadoRequestDto);
+        return platoResponseMapper.toGenericoPlatoList(platoServicePort.listarPlatos(platoPaginado));
     }
 
     @Override
     public PlatoResponseDto updateDescripcionYPrecio(PlatoActualizaRequestDto platoActualizaRequestDto) {
         Plato plato = platoRequestMapper.toPlatoActualizaRequestDto(platoActualizaRequestDto);
         return platoResponseMapper.toResponse(platoServicePort.updatePlato(plato));
+    }
+
+    @Override
+    public PlatoResponseDto cambiarEstado(Long id) {
+        return platoResponseMapper.toResponse(platoServicePort.cambiarEstado(id));
     }
 
     @Override

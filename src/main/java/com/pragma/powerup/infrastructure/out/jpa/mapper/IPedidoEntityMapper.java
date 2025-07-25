@@ -5,6 +5,7 @@ import com.pragma.powerup.infrastructure.out.jpa.entity.PedidoEntity;
 import com.pragma.powerup.infrastructure.out.jpa.entity.RestauranteEntity;
 import com.pragma.powerup.infrastructure.out.jpa.entity.UsuarioEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
@@ -12,18 +13,20 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         unmappedSourcePolicy = ReportingPolicy.IGNORE,
-        uses = IDetallePedidoEntityMapper.class
+        uses = { IDetallePedidoEntityMapper.class } //, IPedidoEntityMapper.class
 )
 
 
 public interface IPedidoEntityMapper {
 
-        @org.mapstruct.Mapping(target = "restaurante", source = "restauranteId", qualifiedByName = "mapRestaurante")
-        @org.mapstruct.Mapping(target = "usuarioEntity", source = "clienteId", qualifiedByName = "mapUsuario")
+        @Mapping(target = "restaurante", source = "restauranteId", qualifiedByName = "mapRestaurante")
+        @Mapping(target = "usuarioEntity", source = "clienteId", qualifiedByName = "mapUsuario")
+        @Mapping(target = "pinSeguridad", source = "pinSeguridad")
         PedidoEntity toEntity(Pedido pedido);
 
-        @org.mapstruct.Mapping(target = "restauranteId", source = "restaurante", qualifiedByName = "mapRestauranteToId")
-        @org.mapstruct.Mapping(target = "clienteId", source = "usuarioEntity", qualifiedByName = "mapUsuarioToId")
+        @Mapping(target = "restauranteId", source = "restaurante", qualifiedByName = "mapRestauranteToId")
+        @Mapping(target = "clienteId", source = "usuarioEntity", qualifiedByName = "mapUsuarioToId")
+        //@Mapping(target = "empleadoAsignado", source = "empleadoAsignado", qualifiedByName = "mapUsuarioToId")
         Pedido toPedido(PedidoEntity entity);
 
         @Named("mapRestaurante")

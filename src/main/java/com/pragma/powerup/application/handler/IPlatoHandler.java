@@ -1,7 +1,9 @@
 package com.pragma.powerup.application.handler;
 
 import com.pragma.powerup.application.dto.request.PlatoActualizaRequestDto;
+import com.pragma.powerup.application.dto.request.PlatoPaginadoRequestDto;
 import com.pragma.powerup.application.dto.request.PlatoRequestDto;
+import com.pragma.powerup.application.dto.response.GenericoPaginadoResponseDto;
 import com.pragma.powerup.application.dto.response.PlatoResponseDto;
 import com.pragma.powerup.domain.model.Plato;
 
@@ -13,9 +15,11 @@ public interface IPlatoHandler {
 
     List<PlatoResponseDto> getAllPlatos();
 
-    List<PlatoResponseDto> listarPlatos(int pagina,int tamanio,Long categoria);
+    GenericoPaginadoResponseDto<PlatoResponseDto> listarPlatos(PlatoPaginadoRequestDto platoPaginadoRequestDto);
 
     PlatoResponseDto updateDescripcionYPrecio (PlatoActualizaRequestDto platoActualizaRequestDto);
+
+    PlatoResponseDto cambiarEstado(Long id);
 
     PlatoResponseDto habilitarPlato (Long id);
 

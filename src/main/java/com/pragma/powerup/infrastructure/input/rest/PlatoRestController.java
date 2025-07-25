@@ -2,8 +2,11 @@ package com.pragma.powerup.infrastructure.input.rest;
 
 
 import com.pragma.powerup.application.dto.request.PlatoActualizaRequestDto;
+import com.pragma.powerup.application.dto.request.PlatoPaginadoRequestDto;
 import com.pragma.powerup.application.dto.request.PlatoRequestDto;
+import com.pragma.powerup.application.dto.response.GenericoPaginadoResponseDto;
 import com.pragma.powerup.application.dto.response.PlatoResponseDto;
+import com.pragma.powerup.application.dto.response.RestauranteResponseDto;
 import com.pragma.powerup.application.handler.IPlatoHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,26 +41,28 @@ public class PlatoRestController {
 //    }
 
     @GetMapping()
-    public ResponseEntity<List<PlatoResponseDto>> listarPlatos(
-            @RequestParam(defaultValue = "0") int pagina,
-            @RequestParam(defaultValue = "10") int tamanio,
-            Long categoria) {
-
-        return ResponseEntity.ok(platoHandler.listarPlatos(pagina, tamanio,categoria));
+    public ResponseEntity<GenericoPaginadoResponseDto<PlatoResponseDto>> listarPlatos(@RequestBody @Valid PlatoPaginadoRequestDto platoPaginadoRequestDto ) {
+        return ResponseEntity.ok(platoHandler.listarPlatos(platoPaginadoRequestDto));
     }
 
 
     @PreAuthorize("hasRole('PROPIETARIO')")
-    @PatchMapping("/{id}/habilitar")
-    public ResponseEntity<PlatoResponseDto> habilitarPlato(@PathVariable Long id){
-        return ResponseEntity.ok(platoHandler.habilitarPlato(id));
+    @PatchMapping("/{id}/cambiar_estado")
+    public ResponseEntity<PlatoResponseDto> cambiarEstado(@PathVariable Long id){
+        return ResponseEntity.ok(platoHandler.cambiarEstado(id));
     }
 
-    @PreAuthorize("hasRole('PROPIETARIO')")
-    @PatchMapping("/{id}/deshabilitar")
-    public ResponseEntity<PlatoResponseDto> deshabilitarPlato(@PathVariable Long id){
-        return ResponseEntity.ok(platoHandler.deshabilitarPlato(id));
-    }
+//    @PreAuthorize("hasRole('PROPIETARIO')")
+//    @PatchMapping("/{id}/habilitar")
+//    public ResponseEntity<PlatoResponseDto> habilitarPlato(@PathVariable Long id){
+//        return ResponseEntity.ok(platoHandler.habilitarPlato(id));
+//    }
+
+//    @PreAuthorize("hasRole('PROPIETARIO')")
+//    @PatchMapping("/{id}/deshabilitar")
+//    public ResponseEntity<PlatoResponseDto> deshabilitarPlato(@PathVariable Long id){
+//        return ResponseEntity.ok(platoHandler.deshabilitarPlato(id));
+//    }
 
 
 

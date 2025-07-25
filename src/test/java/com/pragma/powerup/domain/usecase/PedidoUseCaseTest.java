@@ -3,13 +3,9 @@ package com.pragma.powerup.domain.usecase;
 import com.pragma.powerup.domain.api.IUsuarioSesionServicePort;
 import com.pragma.powerup.domain.exception.PedidoEnProcesoException;
 import com.pragma.powerup.domain.exception.PedidoInvalidoException;
-import com.pragma.powerup.domain.model.Pedido;
-import com.pragma.powerup.domain.model.PedidoDetalle;
-import com.pragma.powerup.domain.model.UsuarioRestaurante;
-import com.pragma.powerup.domain.spi.IPedidoPersistencePort;
-import com.pragma.powerup.domain.spi.IPlatoPersistencePort;
-import com.pragma.powerup.domain.spi.IRestaurantePersistencePort;
-import com.pragma.powerup.domain.spi.IUsuarioRestaurantePersistencePort;
+import com.pragma.powerup.domain.model.*;
+import com.pragma.powerup.domain.spi.*;
+import com.pragma.powerup.domain.util.EstadoPedido;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Collections;
 import java.util.List;
 
-import static com.pragma.powerup.domain.util.EstadoConstants.ESTADO_PENDIENTE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -34,6 +29,9 @@ class PedidoUseCaseTest {
 
     @Mock
     private IUsuarioSesionServicePort usuarioSesionServicePort;
+
+    @Mock
+    private IUsuarioPersistencePort usuarioPersistencePort;
 
     @Mock
     private IPlatoPersistencePort platoPersistencePort;
@@ -139,7 +137,7 @@ class PedidoUseCaseTest {
     @Test
     void listarPedidos_FiltradoPorEstadoYRestaurante_DevuelveLista() {
         // Arrange
-        String estado = ESTADO_PENDIENTE;
+        String estado = EstadoPedido.PENDIENTE.toString();
         int pagina = 0;
         int tamanio = 5;
         Long empleadoId = 1L;
@@ -150,21 +148,63 @@ class PedidoUseCaseTest {
         Pedido pedido2 = new Pedido(2L, clienteId, restauranteId, estado, List.of());
         List<Pedido> pedidos = List.of(pedido1, pedido2);
 
+
+        GenericoPaginadoOut<Pedido> pedidoPaginadoOut = new GenericoPaginadoOut<Pedido>();
+        pedidoPaginadoOut.setLista(pedidos);
+
+        PedidoPaginado pedidoPaginado = new PedidoPaginado();
+        pedidoPaginado.setEstado(estado);
+        pedidoPaginado.setPagina(pagina);
+        pedidoPaginado.setTamanio(tamanio);
+
+
         when(usuarioSesionServicePort.obtenerIdUsuarioAutenticado()).thenReturn(empleadoId);
         when(usuarioRestaurantePersistencePort.getRestauranteEmpleo(empleadoId))
                 .thenReturn(new UsuarioRestaurante(1L,empleadoId, restauranteId));
-        when(pedidoPersistencePort.listarPedidos(estado, pagina, tamanio, restauranteId)).thenReturn(pedidos);
+        when(pedidoPersistencePort.listarPedidos(pedidoPaginado, restauranteId)).thenReturn(pedidoPaginadoOut);
 
         // Act
-        List<Pedido> resultado = pedidoUseCase.listarPedidos(estado, pagina, tamanio);
+        GenericoPaginadoOut<Pedido> resultado = pedidoUseCase.listarPedidos(pedidoPaginado);
 
         // Assert
-        assertEquals(2, resultado.size());
-        assertEquals(estado, resultado.get(0).getEstado());
-        assertEquals(restauranteId, resultado.get(0).getRestauranteId());
+        assertEquals(2, resultado.getLista().size());
+        assertEquals(estado, resultado.getLista().get(0).getEstado());
+        assertEquals(restauranteId, resultado.getLista().get(0).getRestauranteId());
 
-        verify(pedidoPersistencePort).listarPedidos(estado, pagina, tamanio, restauranteId);
+        verify(pedidoPersistencePort).listarPedidos(pedidoPaginado, restauranteId);
     }
 
+
+
+
+    @Test
+    void asignarPedido_EmpleadoAsignaPedidoConExito() {
+        Long idEmpleado = 10L;
+        Long idPedido = 20L;
+        Long restauranteId = 5L;
+
+        Pedido pedido = new Pedido();
+        pedido.setId(idPedido);
+        pedido.setRestauranteId(restauranteId);
+        pedido.setEstado(EstadoPedido.PENDIENTE.toString());
+
+        UsuarioRestaurante ur = new UsuarioRestaurante();
+        ur.setRestauranteId(restauranteId);
+
+        Usuario empleado = new Usuario();
+        empleado.setId(idEmpleado);
+
+        when(usuarioSesionServicePort.obtenerIdUsuarioAutenticado()).thenReturn(idEmpleado);
+        when(usuarioPersistencePort.getUsuario(idEmpleado)).thenReturn(empleado);
+        when(usuarioRestaurantePersistencePort.getRestauranteEmpleo(idEmpleado)).thenReturn(ur);
+        when(pedidoPersistencePort.getPedido(idPedido)).thenReturn(pedido);
+        when(pedidoPersistencePort.actualizarPedido(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Pedido resultado = pedidoUseCase.asignarPedido(idPedido);
+
+        assertNotNull(resultado);
+        assertEquals(empleado, resultado.getEmpleadoAsignado());
+        assertEquals(EstadoPedido.EN_PREPARACION.toString(),resultado.getEstado());
+    }
 
 }

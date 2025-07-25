@@ -22,6 +22,8 @@ public class PedidoEntity {
 
     private String estado;
 
+    private Long pinSeguridad;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurante_id", nullable = false)
     private RestauranteEntity restaurante;
@@ -29,6 +31,10 @@ public class PedidoEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     private UsuarioEntity usuarioEntity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empleado_asignado_id" )
+    private UsuarioEntity empleadoAsignado;
 
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)

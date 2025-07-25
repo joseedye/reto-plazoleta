@@ -1,8 +1,10 @@
 package com.pragma.powerup.infrastructure.out.jpa.adapter;
 
 
+import com.pragma.powerup.domain.model.GenericoPaginadoOut;
 import com.pragma.powerup.domain.model.PedidoDetalle;
 import com.pragma.powerup.domain.model.Plato;
+import com.pragma.powerup.domain.model.PlatoPaginado;
 import com.pragma.powerup.domain.spi.IPlatoPersistencePort;
 import com.pragma.powerup.infrastructure.exception.NoDataFoundException;
 import com.pragma.powerup.infrastructure.exception.PlatoNotFoundException;
@@ -18,6 +20,9 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.pragma.powerup.infrastructure.util.ExcepcionMessageConstants.ORDENA_PLATOS;
+import static com.pragma.powerup.infrastructure.util.ExcepcionMessageConstants.PAGINA_NO_EXISTE;
 
 @RequiredArgsConstructor
 public class PlatoJpaAdapter  implements IPlatoPersistencePort {
@@ -40,19 +45,38 @@ public class PlatoJpaAdapter  implements IPlatoPersistencePort {
     }
 
     @Override
-    public List<Plato> listarPlatos(int pagina, int tamanio, Long categoria) {
+    public GenericoPaginadoOut<Plato> listarPlatos(PlatoPaginado platoPaginado) {
 
-        Pageable pageable =  PageRequest.of(pagina, tamanio, Sort.by("nombre").ascending());
+        Pageable pageable =  PageRequest.of(
+                platoPaginado.getPagina(),
+                platoPaginado.getTamanio(),
+                Sort.by(ORDENA_PLATOS).ascending()
+        );
 
-        Page<PlatoEntity> platoEntities = platoRepository.findAllByCategoria_Id(categoria , pageable);
+        Page<PlatoEntity> platoEntitiesList = platoRepository.findAllByCategoria_Id(platoPaginado.getCategoria() , pageable);
 
-        if(platoEntities.isEmpty()){
+        if (platoPaginado.getPagina() >= platoEntitiesList.getTotalPages()) {
+            throw new NoDataFoundException(PAGINA_NO_EXISTE);
+        }
+
+        if(platoEntitiesList.isEmpty()){
             throw new NoDataFoundException();
         }
 
-        return platoEntities.getContent().stream()
+        List<Plato> platos =  platoEntitiesList.getContent().stream()
                 .map(platoEntityMapper::toPlato)
                 .collect(Collectors.toList());
+
+        GenericoPaginadoOut <Plato> platosPaginadoOut = new GenericoPaginadoOut <Plato>();
+        platosPaginadoOut.setLista(platos);
+        platosPaginadoOut.setPaginaActual(platoEntitiesList.getNumber());
+        platosPaginadoOut.setTotalPaginas(platoEntitiesList.getTotalPages());
+        platosPaginadoOut.setTotalElementos(platoEntitiesList.getTotalElements());
+        platosPaginadoOut.setTamanioPagina(platoEntitiesList.getSize());
+
+        return platosPaginadoOut;
+
+
     }
 
     @Override

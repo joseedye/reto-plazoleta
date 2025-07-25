@@ -1,7 +1,9 @@
 package com.pragma.powerup.application.mapper;
 
+import com.pragma.powerup.application.dto.request.RestaurantePaginadoRequestDto;
 import com.pragma.powerup.application.dto.request.RestauranteRequestDto;
 import com.pragma.powerup.domain.model.Restaurante;
+import com.pragma.powerup.domain.model.RestaurantePaginado;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -13,5 +15,7 @@ import org.mapstruct.ReportingPolicy;
 public interface IRestauranteRequestMapper {
 
     Restaurante toRestaurante(RestauranteRequestDto restauranteRequestDto);
+
+    RestaurantePaginado toRestaurantePaginado(RestaurantePaginadoRequestDto restaurantePaginadoRequestDto);
 
 }

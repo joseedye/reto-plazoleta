@@ -1,6 +1,8 @@
 package com.pragma.powerup.application.handler.impl;
 
+import com.pragma.powerup.application.dto.request.RestaurantePaginadoRequestDto;
 import com.pragma.powerup.application.dto.request.RestauranteRequestDto;
+import com.pragma.powerup.application.dto.response.GenericoPaginadoResponseDto;
 import com.pragma.powerup.application.dto.response.RestauranteResponseDto;
 import com.pragma.powerup.application.handler.IRestauranteHandler;
 import com.pragma.powerup.application.mapper.IRestauranteRequestMapper;
@@ -9,6 +11,7 @@ import com.pragma.powerup.domain.api.IRestauranteServicePort;
 import com.pragma.powerup.domain.api.IUsuarioServicePort;
 import com.pragma.powerup.domain.model.Propietario;
 import com.pragma.powerup.domain.model.Restaurante;
+import com.pragma.powerup.domain.model.RestaurantePaginado;
 import com.pragma.powerup.domain.model.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,8 +39,8 @@ public class RestauranteHandler implements IRestauranteHandler {
   }
 
     @Override
-    public List<RestauranteResponseDto> listarRestaurantes(int pagina,int tamanio) {
-        return restauranteResponseMapper.toResponseList(restauranteServicePort.listarRestaurantes(pagina,tamanio));
-
+    public GenericoPaginadoResponseDto<RestauranteResponseDto> listarRestaurantes(RestaurantePaginadoRequestDto restaurantePaginadoRequestDto) {
+        RestaurantePaginado restaurantePaginado = restauranteRequestMapper.toRestaurantePaginado(restaurantePaginadoRequestDto);
+        return restauranteResponseMapper.toResponseGenerico(restauranteServicePort.listarRestaurantes(restaurantePaginado));
     }
 }

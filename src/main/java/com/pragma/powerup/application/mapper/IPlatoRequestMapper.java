@@ -2,8 +2,10 @@ package com.pragma.powerup.application.mapper;
 
 
 import com.pragma.powerup.application.dto.request.PlatoActualizaRequestDto;
+import com.pragma.powerup.application.dto.request.PlatoPaginadoRequestDto;
 import com.pragma.powerup.application.dto.request.PlatoRequestDto;
 import com.pragma.powerup.domain.model.Plato;
+import com.pragma.powerup.domain.model.PlatoPaginado;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -24,4 +26,8 @@ public interface IPlatoRequestMapper {
     @Mapping(target = "restaurante", ignore = true)
     @Mapping(target = "categoria", ignore = true)
     Plato toPlatoActualizaRequestDto (PlatoActualizaRequestDto platoActualizaRequestDto);
+
+    PlatoPaginado toPlatoPaginado(PlatoPaginadoRequestDto platoPaginadoRequestDto);
+
+
 }

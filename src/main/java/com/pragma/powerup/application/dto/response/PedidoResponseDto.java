@@ -16,6 +16,7 @@ public class PedidoResponseDto {
     private Long clienteId;
     private Long restauranteId;
     private String estado;
+    private Long pinSeguridad;
     private List<PedidoDetalle> detalles;
 
 

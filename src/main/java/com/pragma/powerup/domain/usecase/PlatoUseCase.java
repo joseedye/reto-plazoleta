@@ -5,15 +5,17 @@ import com.pragma.powerup.domain.api.IUsuarioSesionServicePort;
 import com.pragma.powerup.domain.exception.NoDataFoundException;
 import com.pragma.powerup.domain.exception.RestauranteNoPermitidoException;
 import com.pragma.powerup.domain.exception.UsuarioSinPermisoException;
+import com.pragma.powerup.domain.model.GenericoPaginadoOut;
 import com.pragma.powerup.domain.model.Plato;
+import com.pragma.powerup.domain.model.PlatoPaginado;
 import com.pragma.powerup.domain.model.Usuario;
 import com.pragma.powerup.domain.spi.IPlatoPersistencePort;
 import com.pragma.powerup.domain.spi.IUsuarioPersistencePort;
+import com.pragma.powerup.domain.util.RolEnum;
 
 import java.util.List;
 
 import static com.pragma.powerup.domain.util.ExceptionMessageConstants.*;
-import static com.pragma.powerup.domain.util.RolConstants.ROL_PROPIETARIO;
 
 public class PlatoUseCase implements IPlatoServicePort {
 
@@ -33,7 +35,7 @@ public class PlatoUseCase implements IPlatoServicePort {
         Long idUsuarioAutenticado = usuarioSesionServicePort.obtenerIdUsuarioAutenticado();
         Usuario propietario = usuarioPersistencePort.getUsuario(idUsuarioAutenticado);
 
-        if(propietario.getRol().getId() != ROL_PROPIETARIO){
+        if(propietario.getRol().getId() != RolEnum.PROPIETARIO.getId()){
             throw new UsuarioSinPermisoException(USUARIO_SIN_PERMISOS);
         }
 
@@ -53,8 +55,8 @@ public class PlatoUseCase implements IPlatoServicePort {
     }
 
     @Override
-    public List<Plato> listarPlatos(int pagina, int tamanio, Long categoria) {
-        return this.platoPersistencePort.listarPlatos(pagina, tamanio,categoria);
+    public GenericoPaginadoOut<Plato> listarPlatos(PlatoPaginado platoPaginado) {
+        return this.platoPersistencePort.listarPlatos(platoPaginado);
     }
 
     @Override
@@ -70,7 +72,7 @@ public class PlatoUseCase implements IPlatoServicePort {
         Usuario usuariosesion =  usuarioPersistencePort.getUsuario(idUsuarioAutenticado);
 
 
-        if(usuariosesion.getRol().getId() != ROL_PROPIETARIO){
+        if(usuariosesion.getRol().getId() != RolEnum.PROPIETARIO.getId()){
             throw new UsuarioSinPermisoException(USUARIO_SIN_PERMISOS);
         }
 
@@ -124,5 +126,28 @@ public class PlatoUseCase implements IPlatoServicePort {
 
         plato.setEstado(false);
         return this.platoPersistencePort.updatePlato(plato);
+    }
+
+
+
+
+    @Override
+    public Plato cambiarEstado(Long id) {
+
+        Plato plato = this.platoPersistencePort.getPlato(id);
+        if(plato==null){
+            throw new NoDataFoundException(PLATO_NO_EXISTE);
+        }
+
+
+        Long idUsuarioAutentiicado = usuarioSesionServicePort.obtenerIdUsuarioAutenticado();
+        if(plato.getRestaurante().getPropietario().getId()!=idUsuarioAutentiicado){
+            throw new UsuarioSinPermisoException(MODIFICA_PLATO_NO_PERMITIDA);
+        }
+
+
+        plato.setEstado(!plato.isEstado());
+        return this.platoPersistencePort.updatePlato(plato);
+
     }
 }

@@ -3,17 +3,18 @@ package com.pragma.powerup.domain.usecase;
 import com.pragma.powerup.domain.api.IRestauranteServicePort;
 import com.pragma.powerup.domain.api.IUsuarioSesionServicePort;
 import com.pragma.powerup.domain.exception.UsuarioNotFoundException;
+import com.pragma.powerup.domain.model.GenericoPaginadoOut;
 import com.pragma.powerup.domain.model.Restaurante;
+import com.pragma.powerup.domain.model.RestaurantePaginado;
 import com.pragma.powerup.domain.model.Usuario;
 import com.pragma.powerup.domain.spi.IRestaurantePersistencePort;
 import com.pragma.powerup.domain.exception.RolNoPermitidoException;
 import com.pragma.powerup.domain.spi.IUsuarioPersistencePort;
+import com.pragma.powerup.domain.util.RolEnum;
 
 import java.util.List;
 
 import static com.pragma.powerup.domain.util.ExceptionMessageConstants.*;
-import static com.pragma.powerup.domain.util.RolConstants.ROL_ADMIN;
-import static com.pragma.powerup.domain.util.RolConstants.ROL_PROPIETARIO;
 
 public class RestauranteUseCase implements IRestauranteServicePort {
 
@@ -34,7 +35,7 @@ public class RestauranteUseCase implements IRestauranteServicePort {
 
         Long idUsuarioAutentiicado  = usuarioSesionServicePort.obtenerIdUsuarioAutenticado();
         Usuario usuarioAutenticado  = usuarioPersistencePort.getUsuario(idUsuarioAutentiicado);
-        if(usuarioAutenticado.getRol().getId() != ROL_ADMIN){
+        if(usuarioAutenticado.getRol().getId() != RolEnum.ADMIN.getId()){
             throw new RolNoPermitidoException(ROL_NO_ADMIN);
         }
 
@@ -45,7 +46,7 @@ public class RestauranteUseCase implements IRestauranteServicePort {
         restaurante.setPropietario(usuario);
 
 
-        if(usuario.getRol().getId() != ROL_PROPIETARIO){
+        if(usuario.getRol().getId() != RolEnum.PROPIETARIO.getId()){
             throw new RolNoPermitidoException(ROL_NO_PROPIETARIO);
         }
 
@@ -54,8 +55,9 @@ public class RestauranteUseCase implements IRestauranteServicePort {
     }
 
     @Override
-    public List<Restaurante> listarRestaurantes(int pagina,int tamanio) {
-        return this.restaurantePersistencePort.listarRestaurantes(pagina,tamanio);
+    public GenericoPaginadoOut<Restaurante>  listarRestaurantes(RestaurantePaginado restaurantePaginado) {
+        return  this.restaurantePersistencePort.listarRestaurantes(restaurantePaginado);
+
     }
 
     @Override

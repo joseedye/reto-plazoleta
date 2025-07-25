@@ -6,6 +6,7 @@ import com.pragma.powerup.domain.exception.UsuarioSinPermisoException;
 import com.pragma.powerup.domain.model.*;
 import com.pragma.powerup.domain.spi.IPlatoPersistencePort;
 import com.pragma.powerup.domain.spi.IUsuarioPersistencePort;
+import com.pragma.powerup.domain.util.RolEnum;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,8 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static com.pragma.powerup.domain.util.RolConstants.ROL_EMPLEADO;
-import static com.pragma.powerup.domain.util.RolConstants.ROL_PROPIETARIO;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -43,7 +42,7 @@ class PlatoUseCaseTest {
 
         Usuario propietario = new Usuario();
         propietario.setId(idUsuario);
-        propietario.setRol(new Rol(ROL_PROPIETARIO, "PROPIETARIO"));
+        propietario.setRol(new Rol(RolEnum.PROPIETARIO.getId(), "PROPIETARIO"));
 
         when(usuarioPersistencePort.getUsuario(idUsuario)).thenReturn(propietario);
 
@@ -106,11 +105,11 @@ class PlatoUseCaseTest {
 
         Usuario propietario = new Usuario();
         propietario.setId(idUsuario);
-        propietario.setRol(new Rol(ROL_PROPIETARIO, "PROPIETARIO"));
+        propietario.setRol(new Rol(RolEnum.PROPIETARIO.getId(), "PROPIETARIO"));
 
         Usuario otroPropietario = new Usuario();
         otroPropietario.setId(99L);
-        otroPropietario.setRol(new Rol(ROL_PROPIETARIO, "PROPIETARIO"));
+        otroPropietario.setRol(new Rol(RolEnum.PROPIETARIO.getId(), "PROPIETARIO"));
 
         when(usuarioPersistencePort.getUsuario(idUsuario)).thenReturn(propietario);
 
@@ -156,7 +155,7 @@ class PlatoUseCaseTest {
         propietario.setId(1L);
         propietario.setNombres("Juan");
         propietario.setApellidos("Perez");
-        propietario.setRol(new Rol(ROL_PROPIETARIO,"PROPIETARIO"));
+        propietario.setRol(new Rol(RolEnum.PROPIETARIO.getId(),"PROPIETARIO"));
 
         // Restaurante con propietario
         Restaurante restaurante = new Restaurante();
@@ -202,7 +201,7 @@ class PlatoUseCaseTest {
         propietario.setId(1L);
         propietario.setNombres("Juan");
         propietario.setApellidos("Perez");
-        propietario.setRol(new Rol(ROL_PROPIETARIO,"PROPIETARIO"));
+        propietario.setRol(new Rol(RolEnum.PROPIETARIO.getId(),"PROPIETARIO"));
 
         // Restaurante con propietario
         Restaurante restaurante = new Restaurante();
@@ -239,7 +238,7 @@ class PlatoUseCaseTest {
         propietario.setId(1L);
         propietario.setNombres("Juan");
         propietario.setApellidos("Perez");
-        propietario.setRol(new Rol(ROL_PROPIETARIO,"PROPIETARIO"));
+        propietario.setRol(new Rol(RolEnum.PROPIETARIO.getId(),"PROPIETARIO"));
 
         // Restaurante con propietario
         Restaurante restaurante = new Restaurante();
@@ -278,7 +277,7 @@ class PlatoUseCaseTest {
         propietario.setId(1L);
         propietario.setNombres("Juan");
         propietario.setApellidos("Perez");
-        propietario.setRol(new Rol(ROL_PROPIETARIO,"PROPIETARIO"));
+        propietario.setRol(new Rol(RolEnum.PROPIETARIO.getId(),"PROPIETARIO"));
 
         Usuario otroPropietario = new Usuario();
         otroPropietario.setId(2L);
@@ -321,18 +320,23 @@ class PlatoUseCaseTest {
 
         List<Plato> platosEsperados = List.of(plato1, plato2);
 
-        when(platoPersistencePort.listarPlatos(pagina, tamanio, categoriaId)).thenReturn(platosEsperados);
+        PlatoPaginado platoPaginado = new PlatoPaginado(categoriaId,pagina, tamanio);
+
+        GenericoPaginadoOut<Plato> rtaLista  = new GenericoPaginadoOut<Plato>();
+        rtaLista.setLista(platosEsperados);
+
+        when(platoPersistencePort.listarPlatos(platoPaginado)).thenReturn(rtaLista);
 
         // Act
-        List<Plato> resultado = platoUseCase.listarPlatos(pagina, tamanio, categoriaId);
+        GenericoPaginadoOut<Plato> resultado = platoUseCase.listarPlatos(platoPaginado);
 
         // Assert
-        assertEquals(2, resultado.size());
-        assertEquals("Bandeja Paisa", resultado.get(0).getNombre());
-        assertEquals(cat, resultado.get(0).getCategoria());
-        assertEquals("Ajiaco", resultado.get(1).getNombre());
+        assertEquals(2, resultado.getLista().size());
+        assertEquals("Bandeja Paisa", resultado.getLista().get(0).getNombre());
+        assertEquals(cat, resultado.getLista().get(0).getCategoria());
+        assertEquals("Ajiaco", resultado.getLista().get(1).getNombre());
 
-        verify(platoPersistencePort).listarPlatos(pagina, tamanio, categoriaId);
+        verify(platoPersistencePort).listarPlatos(platoPaginado);
     }
 
 

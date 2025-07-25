@@ -11,7 +11,7 @@ import com.pragma.powerup.domain.spi.IRestaurantePersistencePort;
 import com.pragma.powerup.domain.spi.IRolPersistencePort;
 import com.pragma.powerup.domain.spi.IUsuarioPersistencePort;
 import com.pragma.powerup.domain.spi.IUsuarioRestaurantePersistencePort;
-import com.pragma.powerup.domain.util.RolConstants;
+import com.pragma.powerup.domain.util.RolEnum;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.pragma.powerup.domain.util.ExceptionMessageConstants.*;
-import static com.pragma.powerup.domain.util.RolConstants.*;
 import static com.pragma.powerup.domain.util.ValidacionConstants.EDAD_MINIMA;
 
 public class UsuarioUseCase implements IUsuarioServicePort {
@@ -42,10 +41,10 @@ public class UsuarioUseCase implements IUsuarioServicePort {
 
     @Override
     public Usuario saveUsuario(Usuario usuario,Long idRol) {
-        Long idUsuarioAutentiicado = ROL_DEFAULT;
+        Long idUsuarioAutentiicado = RolEnum.DEFAULT.getId();
         Usuario usuarioAutenticado = null;
 
-        if(!Objects.equals(idRol, ROL_CLIENTE)){
+        if(!Objects.equals(idRol, RolEnum.CLIENTE.getId())){
             idUsuarioAutentiicado = usuarioSesionServicePort.obtenerIdUsuarioAutenticado();
             usuarioAutenticado = usuarioPersistencePort.getUsuario(idUsuarioAutentiicado);
         }
@@ -53,14 +52,14 @@ public class UsuarioUseCase implements IUsuarioServicePort {
 
 
 
-        if(Objects.equals(idRol, ROL_PROPIETARIO)) {
+        if(Objects.equals(idRol, RolEnum.PROPIETARIO.getId())) {
 
             if (usuario.getFechaNacimiento().isAfter(LocalDate.now().minusYears(EDAD_MINIMA))) {
                 throw new UsuarioSinMayoriaEdadException(USUARIO_NO_MAYOR_EDAD);
             }
 
 
-            if(!Objects.equals(usuarioAutenticado.getRol().getId(), ROL_ADMIN)){
+            if(!Objects.equals(usuarioAutenticado.getRol().getId(), RolEnum.ADMIN.getId())){
                 throw new UsuarioSinPermisoException(USUARIO_SIN_PERMISOS);
             }
 
@@ -68,8 +67,8 @@ public class UsuarioUseCase implements IUsuarioServicePort {
 
 
 
-        if(Objects.equals(idRol, ROL_EMPLEADO)) {
-            if(!Objects.equals(usuarioAutenticado.getRol().getId(), ROL_PROPIETARIO)){
+        if(Objects.equals(idRol, RolEnum.EMPLEADO.getId())) {
+            if(!Objects.equals(usuarioAutenticado.getRol().getId(), RolEnum.PROPIETARIO.getId())){
                 throw new UsuarioSinPermisoException(USUARIO_SIN_PERMISOS);
             }
         }
@@ -99,7 +98,7 @@ public class UsuarioUseCase implements IUsuarioServicePort {
 
         Usuario usuarioCreado =  this.usuarioPersistencePort.saveUsuario(usuario);
 
-        if (idRol.equals(ROL_EMPLEADO)) {
+        if (idRol.equals(RolEnum.EMPLEADO.getId())) {
 
             Long restauranteId = restaurantePersistencePort.getByPropietario(idUsuarioAutentiicado).getId();
             UsuarioRestaurante usuarioRestaurante = new UsuarioRestaurante();

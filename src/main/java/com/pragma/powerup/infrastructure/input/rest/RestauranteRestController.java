@@ -1,7 +1,9 @@
 package com.pragma.powerup.infrastructure.input.rest;
 
 
+import com.pragma.powerup.application.dto.request.RestaurantePaginadoRequestDto;
 import com.pragma.powerup.application.dto.request.RestauranteRequestDto;
+import com.pragma.powerup.application.dto.response.GenericoPaginadoResponseDto;
 import com.pragma.powerup.application.dto.response.RestauranteResponseDto;
 import com.pragma.powerup.application.handler.IRestauranteHandler;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +31,8 @@ public class RestauranteRestController {
 
 //REQ 9
     @GetMapping()
-    public ResponseEntity<List<RestauranteResponseDto>> listarRestaurantes(
-            @RequestParam(defaultValue = "0") int pagina,
-            @RequestParam(defaultValue = "10") int tamanio) {
-
-        return ResponseEntity.ok(restauranteHandler.listarRestaurantes(pagina, tamanio));
+    public ResponseEntity<GenericoPaginadoResponseDto<RestauranteResponseDto>> listarRestaurantes(RestaurantePaginadoRequestDto restaurantePaginadoRequestDto) {
+        return ResponseEntity.ok(restauranteHandler.listarRestaurantes(restaurantePaginadoRequestDto));
     }
 
 
